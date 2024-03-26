@@ -25,6 +25,20 @@ def diff_polynom(expr):
     # Convert expr string to lower case to ignore case
     expr = expr.lower()
 
+    trig_set = {"sin", "cos", "tan", "cot", "sinh", "cosh", "tanh"}
+
+    for element in trig_set:
+        if element in expr:
+            if element == "sin":
+                # expr = "sin(x)"
+                parts = expr.split("(")
+                inside = parts[1].split(")")[0]
+                outside_derivative = "cos"
+                inside_derivative = diff_polynom(inside)
+                full_derivative = f"{outside_derivative}({inside})"
+                final_derivative = f"{inside_derivative} * {full_derivative}"
+                return final_derivative
+
     # Checks to ensure expr has no more than one variable
     var_set = set(char for char in expr if char.isalpha())
     if len(var_set) > 1:
@@ -46,6 +60,11 @@ def diff_polynom(expr):
     diff_terms = {}
     for term in terms:
         coefficient, term_var, power = co_power_regex.search(term).groups()
+        # Handles common writing conventions for "default 1" coefficients
+        if not coefficient:
+            coefficient = 1
+        if coefficient == "-":
+            coefficient = -1
         if not term_var:
             # There is only a coefficient; input power = 0, so derivative = 0
             continue
@@ -54,11 +73,6 @@ def diff_polynom(expr):
             diff_coefficient = Fraction(coefficient)
             diff_power = 0
         else:
-            # Handles common writing conventions for "default 1" coefficients
-            if not coefficient:
-                coefficient = 1
-            if coefficient == "-":
-                coefficient = -1
             # Calculates the derivative
             diff_coefficient = Fraction(coefficient) * Fraction(power)
             diff_power = Fraction(power) - 1
@@ -91,3 +105,9 @@ def diff_polynom(expr):
             display_expr += f" + {display_term}"
 
     return display_expr
+
+
+if __name__ == "__main__":
+    expression = "sin(x)"
+    result = diff_polynom(expression)
+    print(result)
